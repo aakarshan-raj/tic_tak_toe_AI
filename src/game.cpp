@@ -53,6 +53,7 @@ void Game::input()
                 auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
                 positions_[pos.x][pos.y] = 1;
             }
+            check_winner();
         }
     }
 }
@@ -188,12 +189,41 @@ void Game::draw_symbols()
 
 void Game::restart()
 {
-    positions_[3][3] = {0};
+    game_number++;
+    render();
+    sleep(1); 
+    std::memset(positions_, 0, sizeof positions_);
 }
 
-void Game::check_winner()
+bool Game::check_winner()
 {
-    // 7 check, easy
-    game_number++;
-    restart();
+    // 7 checks
+
+    for (int i = 0; i < 3; i++)
+    {
+        int z = positions_[i][0] & positions_[i][1] & positions_[i][2];
+        if (z != 0)
+        {
+            winner.push_back(z);
+            restart();
+            return true;
+        }
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        int z = positions_[0][i] & positions_[1][i] & positions_[2][i];
+        if (z != 0)
+        {
+            winner.push_back(z);
+            restart();
+            return true;
+        }
+    }
+    int z = positions_[0][0] & positions_[1][1] & positions_[2][2];
+    if (z != 0)
+    {
+        winner.push_back(z);
+        restart();
+        return true;
+    }
 }

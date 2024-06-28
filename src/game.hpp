@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
+#include <cstring>
+#include <unistd.h>
 
 class Game
 {
@@ -25,5 +27,5 @@ public:
     void draw_symbols();
     sf::Vector2<int> click_box(int, int);
     void restart();
-    void check_winner();
+    bool check_winner();
 };
