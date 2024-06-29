@@ -9,7 +9,7 @@ void Game::init()
         exit(-1);
     }
     available_spots = {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}};
-    stats_rect.setSize(sf::Vector2f(height_, full_width-width_));
+    stats_rect.setSize(sf::Vector2f(height_, full_width - width_));
     stats_rect.setFillColor(sf::Color::Black);
     stats_rect.setPosition(sf::Vector2f(full_width, 0));
     stats_rect.rotate(90);
@@ -142,32 +142,60 @@ void Game::input()
         {
             if (event_.type == sf::Event::MouseButtonPressed)
             {
-                auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
-                if (positions_[pos.x][pos.y] == 0)
-                {
-                    positions_[pos.x][pos.y] = last_move;
-                    std::cout<<"Removing:"<<pos.x<<":"<<pos.y<<std::endl;
-                    available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{pos.x, pos.y}), available_spots.end());
-                    last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
-                                                                        : last_move;
-                }
+                human_move(event_.mouseButton.x, event_.mouseButton.y);
                 check_winner();
+            }
+        }
+        else if (type_ == 2)
+        {
+            if (last_move == 1)
+            {
+                if (event_.type == sf::Event::MouseButtonPressed)
+                {
+                    human_move(event_.mouseButton.x, event_.mouseButton.y);
+                    check_winner();
+                }
             }
         }
     }
     if (type_ == 3)
     {
-        std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
-        int random = dist(mt);
-        int x = available_spots[random][0];
-        int y = available_spots[random][1];
-
-        positions_[x][y] = last_move;
-        available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
-        last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
-                                                            : last_move;
+        machine_move();
         check_winner();
     }
+    if (type_ == 2)
+    {
+        if (last_move == 2)
+        {
+            machine_move();
+            check_winner();
+        }
+    }
+}
+
+void Game::human_move(int x, int y)
+{
+    auto pos = click_box(x, y);
+    if (positions_[pos.x][pos.y] == 0)
+    {
+        positions_[pos.x][pos.y] = last_move;
+        available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{pos.x, pos.y}), available_spots.end());
+        last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                            : last_move;
+    }
+}
+
+void Game::machine_move()
+{
+    std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
+    int random = dist(mt);
+    int x = available_spots[random][0];
+    int y = available_spots[random][1];
+
+    positions_[x][y] = last_move;
+    available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
+    last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                        : last_move;
 }
 
 void Game::draw_horizontal_lines()
@@ -279,7 +307,10 @@ void Game::restart()
 {
     game_number++;
     render();
-    // sleep(1);
+    if (wait_between_game_ != 0)
+    {
+        sleep(wait_between_game_);
+    }
     std::memset(positions_, 0, sizeof positions_);
     available_spots = {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}};
 }
@@ -341,6 +372,11 @@ end:
         restart();
         return true;
     }
+    if (wait_between_move_ != 0)
+    {
+        sleep(wait_between_move_);
+    }
+    return true;
 }
 
 void Game::stats()

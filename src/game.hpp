@@ -57,9 +57,14 @@ private:
     sf::Vector2<int> click_box(int, int);
     void restart();
     bool check_winner();
+    void machine_move();
+    void human_move(int,int);
 
     std::random_device dev;
     std::mt19937 mt{dev()};
+
+    int wait_between_game_;
+    int wait_between_move_;
 
 public:
     explicit Game(){};
@@ -71,7 +76,10 @@ public:
     // X - Human
     // O goes first for start = 2
     // X goes first for start = 1
-    Game(int type, int start) : last_move(start), type_(type)
+
+    Game(int type, int start, int wait_between_game = 1, int wait_between_move = 0)
+        : last_move(start), type_(type), wait_between_game_(wait_between_game),
+          wait_between_move_(wait_between_move)
     {
     }
     void run();
