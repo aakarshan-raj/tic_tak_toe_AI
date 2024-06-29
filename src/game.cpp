@@ -46,12 +46,14 @@ void Game::input()
             if (event_.mouseButton.button == sf::Mouse::Left)
             {
                 auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
-                positions_[pos.x][pos.y] = 2;
+                if (positions_[pos.x][pos.y] == 0)
+                    positions_[pos.x][pos.y] = 2;
             }
             else if (event_.mouseButton.button == sf::Mouse::Right)
             {
                 auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
-                positions_[pos.x][pos.y] = 1;
+                if (positions_[pos.x][pos.y] == 0)
+                    positions_[pos.x][pos.y] = 1;
             }
             check_winner();
         }
@@ -230,6 +232,25 @@ bool Game::check_winner()
     if (y != 0)
     {
         winner.push_back(y);
+        restart();
+        return true;
+    }
+    bool draw = true;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (positions_[i][j] == 0)
+            {
+                draw = false;
+                goto end;
+            }
+        }
+    }
+end:
+    if (draw)
+    {
+        winner.push_back(0);
         restart();
         return true;
     }
