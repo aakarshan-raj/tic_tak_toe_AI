@@ -2,8 +2,104 @@
 
 void Game::init()
 {
-    window_.create(sf::VideoMode(width_, height_), "Tic Tac Toe");
-    game_number = 1;
+    window_.create(sf::VideoMode(full_width, height_), "Tic Tac Toe");
+    if (!font.loadFromFile("font/Poppins-Regular.ttf"))
+    {
+        running = false;
+        exit(-1);
+    }
+
+    stats_rect.setSize(sf::Vector2f(height_, 200));
+    stats_rect.setFillColor(sf::Color::Black);
+    stats_rect.setPosition(sf::Vector2f(800, 0));
+    stats_rect.rotate(90);
+
+    stat_text.setFont(font);
+    stat_text.setPosition(sf::Vector2f(600, 0));
+    stat_text.setString("Stats");
+    stat_text.setCharacterSize(20);
+    stat_text.setFillColor(sf::Color::Red);
+
+    total_text.setFont(font);
+    total_text.setPosition(sf::Vector2f(600, 40));
+    total_text.setString("Total Matches:");
+    total_text.setCharacterSize(20);
+    total_text.setFillColor(sf::Color::Red);
+
+    total_text_value.setFont(font);
+    total_text_value.setPosition(sf::Vector2f(750, 40));
+    total_text_value.setString("0");
+    total_text_value.setCharacterSize(20);
+    total_text_value.setFillColor(sf::Color::Red);
+
+    x_text.setFont(font);
+    x_text.setPosition(sf::Vector2f(600, 80));
+    x_text.setString("X wins:");
+    x_text.setCharacterSize(20);
+    x_text.setFillColor(sf::Color::Red);
+
+    o_text.setFont(font);
+    o_text.setPosition(sf::Vector2f(600, 120));
+    o_text.setString("O wins:");
+    o_text.setCharacterSize(20);
+    o_text.setFillColor(sf::Color::Red);
+
+    x_text_value.setFont(font);
+    x_text_value.setPosition(sf::Vector2f(670, 80));
+    x_text_value.setString("0");
+    x_text_value.setCharacterSize(20);
+    x_text_value.setFillColor(sf::Color::Red);
+
+    o_text_value.setFont(font);
+    o_text_value.setPosition(sf::Vector2f(670, 120));
+    o_text_value.setString("0");
+    o_text_value.setCharacterSize(20);
+    o_text_value.setFillColor(sf::Color::Red);
+
+    draw_text.setFont(font);
+    draw_text.setPosition(sf::Vector2f(600, 160));
+    draw_text.setString("Draws:");
+    draw_text.setCharacterSize(20);
+    draw_text.setFillColor(sf::Color::Red);
+
+    draw_text_value.setFont(font);
+    draw_text_value.setPosition(sf::Vector2f(670, 160));
+    draw_text_value.setString("0");
+    draw_text_value.setCharacterSize(20);
+    draw_text_value.setFillColor(sf::Color::Red);
+
+    line1_h.setSize(sf::Vector2f(width_, 3));
+    line2_h.setSize(sf::Vector2f(width_, 3));
+
+    line1_h.setFillColor(sf::Color::Black);
+    line1_h.setPosition(sf::Vector2f(0, height_ / 3));
+
+    line2_h.setFillColor(sf::Color::Black);
+    line2_h.setPosition(sf::Vector2f(0, 2 * (height_ / 3)));
+
+    line1_v.setSize(sf::Vector2f(height_, 3));
+    line2_v.setSize(sf::Vector2f(height_, 3));
+
+    line1_v.setFillColor(sf::Color::Black);
+    line1_v.setPosition(sf::Vector2f(width_ / 3, 0));
+    line1_v.rotate(90);
+
+    line2_v.setFillColor(sf::Color::Black);
+    line2_v.setPosition(sf::Vector2f((width_ / 3) * 2, 0));
+    line2_v.rotate(90);
+
+    shape_o.setRadius(70);
+    shape_o.setOrigin(sf::Vector2f(70, 70));
+    shape_o.setOutlineThickness(3);
+    shape_o.setOutlineColor(sf::Color::Black);
+
+    cross_line1.setSize(sf::Vector2f(200, 5));
+    cross_line1.rotate(45);
+    cross_line1.setFillColor(sf::Color::Black);
+
+    cross_line2.setSize(sf::Vector2f(200, 5));
+    cross_line2.rotate(90 + 45);
+    cross_line2.setFillColor(sf::Color::Black);
 }
 
 void Game::run()
@@ -23,6 +119,7 @@ void Game::render()
     draw_symbols();
     draw_horizontal_lines();
     draw_vertical_lines();
+    stats();
     window_.display();
 }
 
@@ -43,18 +140,14 @@ void Game::input()
         }
         if (event_.type == sf::Event::MouseButtonPressed)
         {
-            if (event_.mouseButton.button == sf::Mouse::Left)
+            auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
+            if (positions_[pos.x][pos.y] == 0)
             {
-                auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
-                if (positions_[pos.x][pos.y] == 0)
-                    positions_[pos.x][pos.y] = 2;
+                positions_[pos.x][pos.y] = last_move;
+                last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                                    : last_move;
             }
-            else if (event_.mouseButton.button == sf::Mouse::Right)
-            {
-                auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
-                if (positions_[pos.x][pos.y] == 0)
-                    positions_[pos.x][pos.y] = 1;
-            }
+
             check_winner();
         }
     }
@@ -62,30 +155,16 @@ void Game::input()
 
 void Game::draw_horizontal_lines()
 {
-    sf::RectangleShape line1(sf::Vector2f(width_, 3));
-    sf::RectangleShape line2(sf::Vector2f(width_, 3));
-    line1.setFillColor(sf::Color::Black);
-    line1.setPosition(sf::Vector2f(0, height_ / 3));
 
-    line2.setFillColor(sf::Color::Black);
-    line2.setPosition(sf::Vector2f(0, 2 * (height_ / 3)));
-    window_.draw(line1);
-    window_.draw(line2);
+    window_.draw(line1_h);
+    window_.draw(line2_h);
 }
 
 void Game::draw_vertical_lines()
 {
-    sf::RectangleShape line1(sf::Vector2f(height_, 3));
-    sf::RectangleShape line2(sf::Vector2f(height_, 3));
-    line1.setFillColor(sf::Color::Black);
-    line1.setPosition(sf::Vector2f(width_ / 3, 0));
-    line1.rotate(90);
 
-    line2.setFillColor(sf::Color::Black);
-    line2.setPosition(sf::Vector2f((width_ / 3) * 2, 0));
-    line2.rotate(90);
-    window_.draw(line1);
-    window_.draw(line2);
+    window_.draw(line1_v);
+    window_.draw(line2_v);
 }
 
 sf::Vector2<int> Game::click_box(int x, int y)
@@ -144,28 +223,18 @@ sf::Vector2<int> Game::click_box(int x, int y)
 
 void Game::draw_o(int x, int y)
 {
-    sf::CircleShape shape(70);
-    shape.setOrigin(sf::Vector2f(70, 70));
-    shape.setPosition(100 + (x * 200), 100 + (y * 200));
-    shape.setOutlineThickness(3);
-    shape.setOutlineColor(sf::Color::Black);
-    window_.draw(shape);
+    shape_o.setPosition(100 + (x * 200), 100 + (y * 200));
+    window_.draw(shape_o);
 }
 
 void Game::draw_x(int x, int y)
 {
-    sf::RectangleShape line1(sf::Vector2f(200, 5));
-    line1.rotate(45);
-    line1.setFillColor(sf::Color::Black);
-    line1.setPosition(sf::Vector2f(30 + (200 * x), 30 + (200 * y)));
 
-    sf::RectangleShape line2(sf::Vector2f(200, 5));
-    line2.rotate(90 + 45);
-    line2.setFillColor(sf::Color::Black);
-    line2.setPosition(sf::Vector2f(170 + (200 * x), 30 + (200 * y)));
+    cross_line1.setPosition(sf::Vector2f(30 + (200 * x), 30 + (200 * y)));
+    cross_line2.setPosition(sf::Vector2f(170 + (200 * x), 30 + (200 * y)));
 
-    window_.draw(line1);
-    window_.draw(line2);
+    window_.draw(cross_line1);
+    window_.draw(cross_line2);
 }
 
 void Game::draw_symbols()
@@ -206,7 +275,7 @@ bool Game::check_winner()
         int z = positions_[i][0] & positions_[i][1] & positions_[i][2];
         if (z != 0)
         {
-            winner.push_back(z);
+            winner[z]++;
             restart();
             return true;
         }
@@ -216,7 +285,7 @@ bool Game::check_winner()
         int z = positions_[0][i] & positions_[1][i] & positions_[2][i];
         if (z != 0)
         {
-            winner.push_back(z);
+            winner[z]++;
             restart();
             return true;
         }
@@ -224,14 +293,14 @@ bool Game::check_winner()
     int z = positions_[0][0] & positions_[1][1] & positions_[2][2];
     if (z != 0)
     {
-        winner.push_back(z);
+        winner[z]++;
         restart();
         return true;
     }
     int y = positions_[0][2] & positions_[1][1] & positions_[2][0];
     if (y != 0)
     {
-        winner.push_back(y);
+        winner[y]++;
         restart();
         return true;
     }
@@ -250,8 +319,28 @@ bool Game::check_winner()
 end:
     if (draw)
     {
-        winner.push_back(0);
+        winner[0]++;
         restart();
         return true;
     }
+}
+
+void Game::stats()
+{
+
+    total_text_value.setString(std::to_string(game_number));
+    x_text_value.setString(std::to_string(winner[1]));
+    o_text_value.setString(std::to_string(winner[2]));
+    draw_text_value.setString(std::to_string(winner[0]));
+
+    window_.draw(stats_rect);
+    window_.draw(stat_text);
+    window_.draw(x_text);
+    window_.draw(o_text);
+    window_.draw(x_text_value);
+    window_.draw(o_text_value);
+    window_.draw(total_text);
+    window_.draw(total_text_value);
+    window_.draw(draw_text);
+    window_.draw(draw_text_value);
 }

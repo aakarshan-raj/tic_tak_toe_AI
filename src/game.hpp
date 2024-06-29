@@ -7,19 +7,50 @@
 class Game
 {
 
+private:
+    sf::RectangleShape stats_rect;
+    sf::Text stat_text;
+    sf::Text x_text;
+    sf::Text o_text;
+    sf::Text total_text;
+    sf::Text total_text_value;
+    sf::Text x_text_value;
+    sf::Text o_text_value;
+
+    sf::Text draw_text;
+    sf::Text draw_text_value;
+
+
+    sf::RectangleShape line1_h;
+    sf::RectangleShape line2_h;
+
+    sf::RectangleShape line1_v;
+    sf::RectangleShape line2_v;
+
+    sf::CircleShape shape_o;
+
+    sf::RectangleShape cross_line1;
+    sf::RectangleShape cross_line2;
+
+
+
 public:
     sf::RenderWindow window_;
-    int positions_[3][3] = {{2, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    sf::Font font;
+    int positions_[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
     int game_number{0};
-    std::vector<int> winner;
+    int last_move{2};
+    std::map<int, int> winner;
     sf::Event event_;
     bool running{true};
     int width_ = 600;
     int height_ = 600;
+    int full_width = 800;
     void init();
     void run();
     void render();
     void input();
+    void stats();
     void draw_vertical_lines();
     void draw_horizontal_lines();
     void draw_x(int, int);
