@@ -8,10 +8,10 @@ void Game::init()
         running = false;
         exit(-1);
     }
-
-    stats_rect.setSize(sf::Vector2f(height_, 200));
+    available_spots = {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}};
+    stats_rect.setSize(sf::Vector2f(height_, full_width-width_));
     stats_rect.setFillColor(sf::Color::Black);
-    stats_rect.setPosition(sf::Vector2f(800, 0));
+    stats_rect.setPosition(sf::Vector2f(full_width, 0));
     stats_rect.rotate(90);
 
     stat_text.setFont(font);
@@ -138,18 +138,35 @@ void Game::input()
                 running = false;
             }
         }
-        if (event_.type == sf::Event::MouseButtonPressed)
+        if (type_ == 1)
         {
-            auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
-            if (positions_[pos.x][pos.y] == 0)
+            if (event_.type == sf::Event::MouseButtonPressed)
             {
-                positions_[pos.x][pos.y] = last_move;
-                last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
-                                                                    : last_move;
+                auto pos = click_box(event_.mouseButton.x, event_.mouseButton.y);
+                if (positions_[pos.x][pos.y] == 0)
+                {
+                    positions_[pos.x][pos.y] = last_move;
+                    std::cout<<"Removing:"<<pos.x<<":"<<pos.y<<std::endl;
+                    available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{pos.x, pos.y}), available_spots.end());
+                    last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                                        : last_move;
+                }
+                check_winner();
             }
-
-            check_winner();
         }
+    }
+    if (type_ == 3)
+    {
+        std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
+        int random = dist(mt);
+        int x = available_spots[random][0];
+        int y = available_spots[random][1];
+
+        positions_[x][y] = last_move;
+        available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
+        last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                            : last_move;
+        check_winner();
     }
 }
 
@@ -172,50 +189,50 @@ sf::Vector2<int> Game::click_box(int x, int y)
     sf::Vector2<int> box;
     if (x > 400)
     {
-        box.x = 2;
+        box.y = 2;
         if (y > 400)
         {
-            box.y = 2;
+            box.x = 2;
         }
         else if (y > 200)
         {
-            box.y = 1;
+            box.x = 1;
         }
         else
         {
-            box.y = 0;
+            box.x = 0;
         }
     }
     else if (x > 200)
     {
-        box.x = 1;
+        box.y = 1;
         if (y > 400)
         {
-            box.y = 2;
+            box.x = 2;
         }
         else if (y > 200)
         {
-            box.y = 1;
+            box.x = 1;
         }
         else
         {
-            box.y = 0;
+            box.x = 0;
         }
     }
     else
     {
-        box.x = 0;
+        box.y = 0;
         if (y > 400)
         {
-            box.y = 2;
+            box.x = 2;
         }
         else if (y > 200)
         {
-            box.y = 1;
+            box.x = 1;
         }
         else
         {
-            box.y = 0;
+            box.x = 0;
         }
     }
     return box;
@@ -248,11 +265,11 @@ void Game::draw_symbols()
         {
             if (positions_[i][j] == 1)
             {
-                draw_x(i, j);
+                draw_x(j, i);
             }
             else if (positions_[i][j] == 2)
             {
-                draw_o(i, j);
+                draw_o(j, i);
             }
         }
     }
@@ -262,8 +279,9 @@ void Game::restart()
 {
     game_number++;
     render();
-    sleep(1);
+    // sleep(1);
     std::memset(positions_, 0, sizeof positions_);
+    available_spots = {{0, 0}, {0, 1}, {0, 2}, {1, 0}, {1, 1}, {1, 2}, {2, 0}, {2, 1}, {2, 2}};
 }
 
 bool Game::check_winner()
