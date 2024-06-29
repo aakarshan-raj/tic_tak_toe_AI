@@ -191,13 +191,13 @@ void Game::restart()
 {
     game_number++;
     render();
-    sleep(1); 
+    sleep(1);
     std::memset(positions_, 0, sizeof positions_);
 }
 
 bool Game::check_winner()
 {
-    // 7 checks
+    // 8 checks
 
     for (int i = 0; i < 3; i++)
     {
@@ -223,6 +223,13 @@ bool Game::check_winner()
     if (z != 0)
     {
         winner.push_back(z);
+        restart();
+        return true;
+    }
+    int y = positions_[0][2] & positions_[1][1] & positions_[2][0];
+    if (y != 0)
+    {
+        winner.push_back(y);
         restart();
         return true;
     }
