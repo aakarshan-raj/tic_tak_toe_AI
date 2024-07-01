@@ -58,13 +58,22 @@ private:
     void restart();
     bool check_winner();
     void machine_move();
-    void human_move(int,int);
+    void human_move(int, int);
 
     std::random_device dev;
     std::mt19937 mt{dev()};
 
+    enum machine_player
+    {
+        CPU,
+        MINIMAX,
+        RL
+    };
+
     int wait_between_game_;
     int wait_between_move_;
+
+    void minimax(int[3][3], int, bool);
 
 public:
     explicit Game(){};
@@ -77,7 +86,7 @@ public:
     // O goes first for start = 2
     // X goes first for start = 1
 
-    Game(int type, int start, int wait_between_game = 1, int wait_between_move = 0)
+    Game(int type, int start, int wait_between_game = 1, int wait_between_move = 0, machine_player op = machine_player::CPU)
         : last_move(start), type_(type), wait_between_game_(wait_between_game),
           wait_between_move_(wait_between_move)
     {

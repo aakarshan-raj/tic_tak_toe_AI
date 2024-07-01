@@ -398,3 +398,7 @@ void Game::stats()
     window_.draw(draw_text);
     window_.draw(draw_text_value);
 }
+
+void Game::minimax(int position[3][3], int depth, bool turn)
+{
+}
