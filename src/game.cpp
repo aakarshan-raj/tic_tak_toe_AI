@@ -189,8 +189,13 @@ void Game::machine_move()
 {
     std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
     int random = dist(mt);
-    int x = available_spots[random][0];
-    int y = available_spots[random][1];
+    auto move = explore();
+
+    // int x = available_spots[random][0];
+    // int y = available_spots[random][1];
+
+    int x = std::get<0>(move);
+    int y = std::get<1>(move);
 
     positions_[x][y] = last_move;
     available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
@@ -399,6 +404,125 @@ void Game::stats()
     window_.draw(draw_text_value);
 }
 
-void Game::minimax(int position[3][3], int depth, bool turn)
+int Game::check_minimax_winner()
 {
+    // 8 checks
+
+    for (int i = 0; i < 3; i++)
+    {
+        int z = positions_[i][0] & positions_[i][1] & positions_[i][2];
+        if (z != 0)
+        {
+            return z == 2 ? 1 : -1;
+        }
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        int z = positions_[0][i] & positions_[1][i] & positions_[2][i];
+        if (z != 0)
+        {
+            return z == 2 ? 1 : -1;
+        }
+    }
+    int z = positions_[0][0] & positions_[1][1] & positions_[2][2];
+    if (z != 0)
+    {
+        return z == 2 ? 1 : -1;
+    }
+    int y = positions_[0][2] & positions_[1][1] & positions_[2][0];
+    if (y != 0)
+    {
+        return z == 2 ? 1 : -1;
+    }
+    bool draw = true;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (positions_[i][j] == 0)
+            {
+                draw = false;
+            }
+        }
+    }
+    return draw ? 0 : 3;
+}
+
+int Game::minimax(int depth, bool turn)
+{
+    int result = check_minimax_winner();
+    if (result != 3)
+    {
+        return result;
+    }
+    if (turn)
+    { // Maximising
+        int best_score = -1;
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (positions_[i][j] == 0)
+                {
+                    positions_[i][j] = 2; // AI move
+                    int score = minimax(0, false);
+                    positions_[i][j] = 0;
+                    if (best_score < score)
+                    {
+                        best_score = score;
+                    }
+                }
+            }
+        }
+        return best_score;
+    }
+    else
+    { // Minimising
+        int best_score = 1;
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (positions_[i][j] == 0)
+                {
+                    positions_[i][j] = 1; // Human move
+                    int score = minimax(0, true);
+                    positions_[i][j] = 0;
+                    if (best_score > score)
+                    {
+                        best_score = score;
+                    }
+                }
+            }
+        }
+        return best_score;
+    }
+}
+
+std::tuple<int, int> Game::explore()
+{
+    int x = 0;
+    int y = 0;
+    int best_score = -1;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            if (positions_[i][j] == 0)
+            {
+                positions_[i][j] = 2; // Human move
+                int score = minimax(0, false);
+                positions_[i][j] = 0;
+                if (best_score < score)
+                {
+                    best_score = score;
+                    x = i;
+                    y = j;
+                }
+            }
+        }
+    }
+    std::cout << "Best score:" << best_score << std::endl;
+    std::cout << "Position is:" << x << ":" << y << std::endl;
+    return std::tuple<int, int>(x, y);
 }

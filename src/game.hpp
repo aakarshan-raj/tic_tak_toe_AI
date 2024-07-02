@@ -73,7 +73,9 @@ private:
     int wait_between_game_;
     int wait_between_move_;
 
-    void minimax(int[3][3], int, bool);
+    int minimax(int, bool);
+    std::tuple<int,int> explore();
+    int check_minimax_winner();
 
 public:
     explicit Game(){};
