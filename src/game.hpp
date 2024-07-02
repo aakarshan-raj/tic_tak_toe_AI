@@ -74,7 +74,7 @@ private:
     int wait_between_move_;
 
     int minimax(int, bool);
-    std::tuple<int,int> explore();
+    std::tuple<int,int> best_move();
     int check_minimax_winner();
 
 public:

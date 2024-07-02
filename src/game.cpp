@@ -189,7 +189,7 @@ void Game::machine_move()
 {
     std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
     int random = dist(mt);
-    auto move = explore();
+    auto move = best_move();
 
     // int x = available_spots[random][0];
     // int y = available_spots[random][1];
@@ -457,7 +457,7 @@ int Game::minimax(int depth, bool turn)
     }
     if (turn)
     { // Maximising
-        int best_score = -1;
+        int best_score = -10000;
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -478,7 +478,7 @@ int Game::minimax(int depth, bool turn)
     }
     else
     { // Minimising
-        int best_score = 1;
+        int best_score = 10000;
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -499,7 +499,7 @@ int Game::minimax(int depth, bool turn)
     }
 }
 
-std::tuple<int, int> Game::explore()
+std::tuple<int, int> Game::best_move()
 {
     int x = 0;
     int y = 0;
@@ -522,7 +522,5 @@ std::tuple<int, int> Game::explore()
             }
         }
     }
-    std::cout << "Best score:" << best_score << std::endl;
-    std::cout << "Position is:" << x << ":" << y << std::endl;
     return std::tuple<int, int>(x, y);
 }
