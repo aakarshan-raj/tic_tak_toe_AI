@@ -187,20 +187,67 @@ void Game::human_move(int x, int y)
 
 void Game::machine_move()
 {
-    std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
-    int random = dist(mt);
-    auto move = best_move();
 
-    // int x = available_spots[random][0];
-    // int y = available_spots[random][1];
+    if (last_move == 2)
+    {
+        if (machine_player_1 == machine_player_type::MINIMAX)
+        {
+            std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
+            int random = dist(mt);
+            auto move = best_move(true);
 
-    int x = std::get<0>(move);
-    int y = std::get<1>(move);
+            int x = std::get<0>(move);
+            int y = std::get<1>(move);
 
-    positions_[x][y] = last_move;
-    available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
-    last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
-                                                        : last_move;
+            positions_[x][y] = last_move;
+            available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
+            last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                                : last_move;
+        }
+        else if (machine_player_1 == machine_player_type::CPU)
+        {
+            std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
+            int random = dist(mt);
+
+            int x = available_spots[random][0];
+            int y = available_spots[random][1];
+
+            positions_[x][y] = last_move;
+            available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
+            last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                                : last_move;
+        }
+    }
+    else if (last_move == 1)
+    {
+        if (machine_player_2 == machine_player_type::MINIMAX)
+        {
+            std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
+            int random = dist(mt);
+            auto move = best_move(false);
+
+            int x = std::get<0>(move);
+            int y = std::get<1>(move);
+
+            positions_[x][y] = last_move;
+            available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
+            last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                                : last_move;
+        }
+        else if (machine_player_2 == machine_player_type::CPU)
+        {
+            std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
+            int random = dist(mt);
+
+            int x = available_spots[random][0];
+            int y = available_spots[random][1];
+
+            positions_[x][y] = last_move;
+            available_spots.erase(std::remove(available_spots.begin(), available_spots.end(), std::vector<int>{x, y}), available_spots.end());
+            last_move = (last_move == 2) ? 1 : (last_move == 1) ? 2
+                                                                : last_move;
+        }
+    }
 }
 
 void Game::draw_horizontal_lines()
@@ -499,7 +546,7 @@ int Game::minimax(int depth, bool turn)
     }
 }
 
-std::tuple<int, int> Game::best_move()
+std::tuple<int, int> Game::best_move(bool player)
 {
     int x = 0;
     int y = 0;
@@ -510,8 +557,8 @@ std::tuple<int, int> Game::best_move()
         {
             if (positions_[i][j] == 0)
             {
-                positions_[i][j] = 2; // Human move
-                int score = minimax(0, false);
+                positions_[i][j] = 2; // AI move
+                int score = minimax(0, player);
                 positions_[i][j] = 0;
                 if (best_score < score)
                 {

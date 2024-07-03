@@ -5,6 +5,12 @@
 #include <unistd.h>
 #include <random>
 
+enum class machine_player_type
+{
+    CPU,
+    MINIMAX,
+    RL
+};
 class Game
 {
 
@@ -63,18 +69,14 @@ private:
     std::random_device dev;
     std::mt19937 mt{dev()};
 
-    enum machine_player
-    {
-        CPU,
-        MINIMAX,
-        RL
-    };
+    machine_player_type machine_player_1;
+    machine_player_type machine_player_2;
 
     int wait_between_game_;
     int wait_between_move_;
 
     int minimax(int, bool);
-    std::tuple<int,int> best_move();
+    std::tuple<int, int> best_move(bool);
     int check_minimax_winner();
 
 public:
@@ -87,10 +89,13 @@ public:
     // X - Human
     // O goes first for start = 2
     // X goes first for start = 1
+    // set machine_player_one to player in type
 
-    Game(int type, int start, int wait_between_game = 1, int wait_between_move = 0, machine_player op = machine_player::CPU)
+    Game(int type, int start, int wait_between_game = 1, int wait_between_move = 0,
+         machine_player_type machine_player_one = machine_player_type::CPU,
+         machine_player_type machine_player_two = machine_player_type::CPU)
         : last_move(start), type_(type), wait_between_game_(wait_between_game),
-          wait_between_move_(wait_between_move)
+          wait_between_move_(wait_between_move), machine_player_1(machine_player_one), machine_player_2(machine_player_two)
     {
     }
     void run();
