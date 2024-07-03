@@ -192,9 +192,7 @@ void Game::machine_move()
     {
         if (machine_player_1 == machine_player_type::MINIMAX)
         {
-            std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
-            int random = dist(mt);
-            auto move = best_move(true);
+            auto move = best_move(false);
 
             int x = std::get<0>(move);
             int y = std::get<1>(move);
@@ -222,9 +220,7 @@ void Game::machine_move()
     {
         if (machine_player_2 == machine_player_type::MINIMAX)
         {
-            std::uniform_int_distribution<int> dist(0, available_spots.size() - 1);
-            int random = dist(mt);
-            auto move = best_move(false);
+            auto move = best_move(true);
 
             int x = std::get<0>(move);
             int y = std::get<1>(move);
@@ -557,7 +553,7 @@ std::tuple<int, int> Game::best_move(bool player)
         {
             if (positions_[i][j] == 0)
             {
-                positions_[i][j] = 2; // AI move
+                positions_[i][j] = player ? 1 : 2; // AI move
                 int score = minimax(0, player);
                 positions_[i][j] = 0;
                 if (best_score < score)
